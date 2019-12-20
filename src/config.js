@@ -7,8 +7,8 @@ export default function (Vue, languageVm, getTextPluginSilent, autoAddKeyAttribu
   Object.defineProperty(Vue.config, 'language', {
     enumerable: true,
     configurable: true,
-    get: () => { return languageVm.current },
-    set: (val) => { languageVm.current = val },
+    get: () => { return languageVm.translationEngine.language },
+    set: (val) => { languageVm.translationEngine.language = val },
   })
 
   /*

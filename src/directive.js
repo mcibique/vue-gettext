@@ -1,8 +1,6 @@
 import interpolate from './interpolate'
-import translate from './translate'
 import uuid from './uuid'
-import { _Vue } from './localVue'
-
+import Vue from 'vue'
 
 const updateTranslation = (el, binding, vnode) => {
 
@@ -13,13 +11,14 @@ const updateTranslation = (el, binding, vnode) => {
   let translatePlural = attrs['translate-plural']
   let isPlural = translateN !== undefined && translatePlural !== undefined
   let context = vnode.context
+  let translationEngine = context.$language.translationEngine
   let disableHtmlEscaping = attrs['render-html'] === 'true'
 
   if (!isPlural && (translateN || translatePlural)) {
     throw new Error('`translate-n` and `translate-plural` attributes must be used together:' + msgid + '.')
   }
 
-  if (!_Vue.config.getTextPluginSilent && attrs['translate-params']) {
+  if (!translationEngine.silent && attrs['translate-params']) {
     console.warn(`\`translate-params\` is required as an expression for v-translate directive. Please change to \`v-translate='params'\`: ${msgid}`)
   }
 
@@ -27,7 +26,7 @@ const updateTranslation = (el, binding, vnode) => {
     context = Object.assign({}, vnode.context, binding.value)
   }
 
-  let translation = translate.getTranslation(
+  let translation = translationEngine.getTranslation(
     msgid,
     translateN,
     translateContext,
@@ -59,12 +58,13 @@ const updateTranslation = (el, binding, vnode) => {
 export default {
 
   bind (el, binding, vnode) {
+    let translationEngine = vnode.context.$language.translationEngine
 
     // Fix the problem with v-if, see #29.
     // Vue re-uses DOM elements for efficiency if they don't have a key attribute, see:
     // https://vuejs.org/v2/guide/conditional.html#Controlling-Reusable-Elements-with-key
     // https://vuejs.org/v2/api/#key
-    if (_Vue.config.autoAddKeyAttributes && !vnode.key) {
+    if (Vue.config.autoAddKeyAttributes && !vnode.key) {
       vnode.key = uuid()
     }
 
@@ -73,10 +73,10 @@ export default {
     el.dataset.msgid = msgid
 
     // Store the current language in the element's dataset.
-    el.dataset.currentLanguage = _Vue.config.language
+    el.dataset.currentLanguage = translationEngine.language
 
     // Output an info in the console if an interpolation is required but no expression is provided.
-    if (!_Vue.config.getTextPluginSilent) {
+    if (!translationEngine.silent) {
       let hasInterpolation = msgid.indexOf(interpolate.INTERPOLATION_PREFIX) !== -1
       if (hasInterpolation && !binding.expression) {
         console.info(`No expression is provided for change detection. The translation for this key will be static:\n${msgid}`)
@@ -88,12 +88,13 @@ export default {
   },
 
   update (el, binding, vnode) {
+    let translationEngine = vnode.context.$language.translationEngine
 
     let doUpdate = false
 
     // Trigger an update if the language has changed.
-    if (el.dataset.currentLanguage !== _Vue.config.language) {
-      el.dataset.currentLanguage = _Vue.config.language
+    if (el.dataset.currentLanguage !== translationEngine.language) {
+      el.dataset.currentLanguage = translationEngine.language
       doUpdate = true
     }
 

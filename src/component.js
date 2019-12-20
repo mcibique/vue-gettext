@@ -1,6 +1,5 @@
-import translate from './translate'
 import uuid from './uuid'
-import { _Vue } from './localVue'
+import Vue from 'vue'
 
 
 /**
@@ -64,7 +63,7 @@ export default {
 
   computed: {
     translation: function () {
-      let translation = translate.getTranslation(
+      let translation = this.$language.translationEngine.getTranslation(
         this.msgid,
         this.translateN,
         this.translateContext,
@@ -88,7 +87,7 @@ export default {
     // Vue re-uses DOM elements for efficiency if they don't have a key attribute, see:
     // https://vuejs.org/v2/guide/conditional.html#Controlling-Reusable-Elements-with-key
     // https://vuejs.org/v2/api/#key
-    if (_Vue.config.autoAddKeyAttributes && !this.$vnode.key) {
+    if (Vue.config.autoAddKeyAttributes && !this.$vnode.key) {
       this.$vnode.key = uuid()
     }
 

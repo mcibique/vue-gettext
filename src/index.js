@@ -2,11 +2,10 @@ import './object-assign-polyfill'
 
 import Component from './component'
 import Directive from './directive'
-import Config from './config'
+import config from './config'
 import interpolate from './interpolate'
-import Override from './override'
-import translate from './translate'
-import { shareVueInstance } from './localVue'
+import override from './override'
+import TranslationEngine from './translate'
 
 
 let languageVm  // Singleton.
@@ -21,6 +20,7 @@ let GetTextPlugin = function (Vue, options = {}) {
     muteLanguages: [],
     silent: Vue.config.silent,
     translations: null,
+    translationEngine: null,
   }
 
   Object.keys(options).forEach(key => {
@@ -29,28 +29,40 @@ let GetTextPlugin = function (Vue, options = {}) {
     }
   })
 
-  if (!options.translations) {
-    throw new Error('No translations available.')
+  if (!options.translationEngine && !options.translations) {
+    throw new Error('No translations nor translation engine available.')
   }
 
   options = Object.assign(defaultConfig, options)
+
+  if (!options.translationEngine) {
+    options.translationEngine = new TranslationEngine(options.defaultLanguage, options.translations, options.silent, options.muteLanguages)
+  }
+
+  let translationEngine = options.translationEngine
 
   languageVm = new Vue({
     created: function () {
       // Non-reactive data.
       this.available = options.availableLanguages
+      this.translationEngine = translationEngine
     },
-    data: {
-      current: options.defaultLanguage,
+    computed: {
+      current: {
+        get() {
+          return this.translationEngine.language
+        },
+        set(value) {
+          this.translationEngine.language = value
+        }
+      }
     },
     mixins: [options.languageVmMixin],
   })
 
-  shareVueInstance(Vue)
+  override(Vue, languageVm)
 
-  Override(Vue, languageVm)
-
-  Config(Vue, languageVm, options.silent, options.autoAddKeyAttributes, options.muteLanguages)
+  config(Vue, languageVm, options.silent, options.autoAddKeyAttributes, options.muteLanguages)
 
   // Makes <translate> available as a global component.
   Vue.component('translate', Component)
@@ -61,12 +73,11 @@ let GetTextPlugin = function (Vue, options = {}) {
   // Exposes global properties.
   Vue.$translations = options.translations
   // Exposes instance methods.
-  Vue.prototype.$gettext = translate.gettext.bind(translate)
-  Vue.prototype.$pgettext = translate.pgettext.bind(translate)
-  Vue.prototype.$ngettext = translate.ngettext.bind(translate)
-  Vue.prototype.$npgettext = translate.npgettext.bind(translate)
+  Vue.prototype.$gettext = translationEngine.gettext.bind(translationEngine)
+  Vue.prototype.$pgettext = translationEngine.pgettext.bind(translationEngine)
+  Vue.prototype.$ngettext = translationEngine.ngettext.bind(translationEngine)
+  Vue.prototype.$npgettext = translationEngine.npgettext.bind(translationEngine)
   Vue.prototype.$gettextInterpolate = interpolate.bind(interpolate)
-
 }
 
 export default GetTextPlugin

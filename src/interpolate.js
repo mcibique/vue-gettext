@@ -1,4 +1,4 @@
-import { _Vue } from './localVue'
+import Vue from 'vue'
 
 const EVALUATION_RE = /[[\].]{1,2}/g
 
@@ -35,7 +35,7 @@ const MUSTACHE_SYNTAX_RE = /\{\{((?:.|\n)+?)\}\}/g
  */
 let interpolate = function (msgid, context = {}, disableHtmlEscaping = false) {
 
-  if (!_Vue.config.getTextPluginSilent && MUSTACHE_SYNTAX_RE.test(msgid)) {
+  if (!Vue.config.getTextPluginSilent && MUSTACHE_SYNTAX_RE.test(msgid)) {
     console.warn(`Mustache syntax cannot be used with vue-gettext. Please use "%{}" instead of "{{}}" in: ${msgid}`)
   }
 

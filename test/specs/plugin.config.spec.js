@@ -1,7 +1,6 @@
 import Vue from 'vue'
 
 import GetTextPlugin from '../../src/'
-import translate from '../../src/translate'
 import translations from './json/plugin.config.json'
 import uninstallPlugin from '../testUtils'
 
@@ -21,7 +20,7 @@ describe('GetText plugin configuration tests', () => {
   it('raises an error when there are no translations', () => {
     expect(function () {
       Vue.use(GetTextPlugin, {})
-    }).to.throw('No translations available.')
+    }).to.throw('No translations nor translation engine available.')
   })
 
   it('allows to add a mixin to languageVm', () => {
@@ -35,14 +34,14 @@ describe('GetText plugin configuration tests', () => {
       languageVmMixin: {
         computed: {
           currentKebabCase: function () {
-            return this.current.toLowerCase().replace('_', '-')
+            return this.translationEngine.language.toLowerCase().replace('_', '-')
           },
         },
       },
     })
     let vm = new Vue({template: '<div>Foo</div>'}).$mount()
     expect(vm.$language.currentKebabCase).to.equal('fr-fr')
-    vm.$language.current = 'en_GB'
+    vm.$language.translationEngine.language = 'en_GB'
     expect(vm.$language.currentKebabCase).to.equal('en-gb')
   })
 
@@ -116,6 +115,9 @@ describe('GetText plugin `silent` option tests', () => {
 
 describe('GetText plugin `muteLanguages` option tests', () => {
 
+  let translationEngine
+  let vue
+
   beforeEach(function () {
     uninstallPlugin(Vue, GetTextPlugin)
     Vue.use(GetTextPlugin, {
@@ -128,13 +130,16 @@ describe('GetText plugin `muteLanguages` option tests', () => {
       silent: false,
       translations: translations,
     })
+
+    vue = new Vue()
+    translationEngine = vue.$language.translationEngine
   })
 
   it('warnings are ON for all languages', () => {
     console.warn = sinon.spy(console, 'warn')
-    translate.getTranslation('Untranslated key', null, null, null, 'fr_FR')
+    translationEngine.getTranslation('Untranslated key', null, null, null, 'fr_FR')
     expect(console.warn).calledWith('Untranslated fr_FR key found: Untranslated key')
-    translate.getTranslation('Untranslated key', null, null, null, 'en_US')
+    translationEngine.getTranslation('Untranslated key', null, null, null, 'en_US')
     expect(console.warn).calledWith('Untranslated en_US key found: Untranslated key')
     console.warn.restore()
   })
@@ -142,9 +147,9 @@ describe('GetText plugin `muteLanguages` option tests', () => {
   it('warnings are OFF for fr_FR', () => {
     console.warn = sinon.spy(console, 'warn')
     Vue.config.getTextPluginMuteLanguages = ['fr_FR']
-    translate.getTranslation('Untranslated key', null, null, null, 'fr_FR')
+    translationEngine.getTranslation('Untranslated key', null, null, null, 'fr_FR')
     expect(console.warn).notCalled
-    translate.getTranslation('Untranslated key', null, null, null, 'en_US')
+    translationEngine.getTranslation('Untranslated key', null, null, null, 'en_US')
     expect(console.warn).calledWith('Untranslated en_US key found: Untranslated key')
     console.warn.restore()
   })
@@ -152,9 +157,9 @@ describe('GetText plugin `muteLanguages` option tests', () => {
   it('warnings are OFF for en_US', () => {
     console.warn = sinon.spy(console, 'warn')
     Vue.config.getTextPluginMuteLanguages = ['en_US']
-    translate.getTranslation('Untranslated key', null, null, null, 'fr_FR')
+    translationEngine.getTranslation('Untranslated key', null, null, null, 'fr_FR')
     expect(console.warn).calledWith('Untranslated fr_FR key found: Untranslated key')
-    translate.getTranslation('Untranslated key', null, null, null, 'en_US')
+    translationEngine.getTranslation('Untranslated key', null, null, null, 'en_US')
     expect(console.warn).notCalled
     console.warn.restore()
   })
@@ -162,9 +167,9 @@ describe('GetText plugin `muteLanguages` option tests', () => {
   it('warnings are OFF for en_US and fr_FR', () => {
     console.warn = sinon.spy(console, 'warn')
     Vue.config.getTextPluginMuteLanguages = ['fr_FR', 'en_US']
-    translate.getTranslation('Untranslated key', null, null, null, 'fr_FR')
+    translationEngine.getTranslation('Untranslated key', null, null, null, 'fr_FR')
     expect(console.warn).notCalled
-    translate.getTranslation('Untranslated key', null, null, null, 'en_US')
+    translationEngine.getTranslation('Untranslated key', null, null, null, 'en_US')
     expect(console.warn).notCalled
     console.warn.restore()
   })

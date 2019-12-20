@@ -3,7 +3,7 @@ var webpackTestConfig = require('./webpack-test.config')
 
 module.exports = function (config) {
   config.set({
-    browsers: ['ChromeHeadless'],
+    browsers: ['ChromiumHeadless'],
     frameworks: ['mocha', 'sinon-chai'],
     files: ['../test/index.js'],
     preprocessors: {
