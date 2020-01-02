@@ -20,7 +20,7 @@ const INTERPOLATION_RE = /%\{((?:.|\n)+?)\}/g
 const MUSTACHE_SYNTAX_RE = /\{\{((?:.|\n)+?)\}\}/g
 
 class InterpolationEngine {
-  constructor(silent) {
+  constructor (silent) {
     this.silent = silent
   }
 

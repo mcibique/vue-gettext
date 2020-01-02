@@ -1,4 +1,4 @@
-import InterpolationEngine from './interpolate';
+import InterpolationEngine from './interpolate'
 import uuid from './uuid'
 import Vue from 'vue'
 

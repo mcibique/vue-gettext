@@ -1,24 +1,12 @@
-import Vue from 'vue'
-
-import GetTextPlugin from '../../src/'
-import translations from './json/translate.json'
-import uninstallPlugin from '../testUtils'
-
+import InterpolationEngine from '../../src/interpolate'
 
 describe('Interpolate tests', () => {
 
   let interpolationEngine
-  let vue
 
   beforeEach(function () {
-    uninstallPlugin(Vue, GetTextPlugin)
-    Vue.use(GetTextPlugin, {
-      translations: translations,
-      silent: true,
-    })
-
-    vue = new Vue();
-    interpolationEngine = vue.$language.interpolationEngine
+    let silent = true
+    interpolationEngine = new InterpolationEngine(silent)
   })
 
   it('without placeholders', () => {
@@ -136,7 +124,7 @@ describe('Interpolate tests', () => {
     console.warn = sinon.spy(console, 'warn')
     interpolationEngine.$gettextInterpolate(msgid, context)
     expect(console.warn).notCalled
-    Vue.config.getTextPluginSilent = false
+    interpolationEngine.silent = false
     interpolationEngine.$gettextInterpolate(msgid, context)
     expect(console.warn).calledOnce
     console.warn.restore()

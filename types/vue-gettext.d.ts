@@ -1,5 +1,20 @@
 import Vue, { ComponentOptions, VueConstructor} from 'vue';
 
+export class TranslationEngine {
+	constructor(language: string, translations: object, silent: boolean, muteLanguages: string[]);
+
+	language: string;
+	translations: object;
+	silent: boolean;
+	muteLanguages: string[];
+}
+
+export class InterpolationEngine {
+	constructor(silent: boolean);
+
+	silent: boolean;
+}
+
 interface IVueGettextOptions {
 	availableLanguages: {
 		[key: string]: string;
@@ -9,6 +24,8 @@ interface IVueGettextOptions {
 	muteLanguages: string[];
 	silent: boolean;
 	translations: object;
+	translationEngine: TranslationEngine;
+	interpolationEngine: InterpolationEngine;
 }
 
 export class VueGettext {

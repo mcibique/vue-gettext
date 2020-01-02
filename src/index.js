@@ -36,34 +36,34 @@ let GetTextPlugin = function (Vue, options = {}) {
 
   options = Object.assign(defaultConfig, options)
 
-  if (!options.translationEngine) {
-    options.translationEngine = new TranslationEngine(options.defaultLanguage, options.translations, options.silent, options.muteLanguages)
-  }
-
-  if (!options.interpolationEngine) {
-    options.interpolationEngine = new InterpolationEngine(options.silent);
-  }
-
-  let interpolationEngine = options.interpolationEngine;
   let translationEngine = options.translationEngine
+  if (!translationEngine) {
+    translationEngine = new TranslationEngine(options.defaultLanguage, options.translations, options.silent, options.muteLanguages)
+  }
+
+  let interpolationEngine = options.interpolationEngine
+
+  if (!interpolationEngine) {
+    interpolationEngine = new InterpolationEngine(options.silent)
+  }
 
   languageVm = new Vue({
     created: function () {
       // Non-reactive data.
       this.available = options.availableLanguages
     },
-    data() {
+    data () {
       return { translationEngine, interpolationEngine }
     },
     computed: {
       current: {
-        get() {
+        get () {
           return this.translationEngine.language
         },
-        set(value) {
+        set (value) {
           this.translationEngine.language = value
-        }
-      }
+        },
+      },
     },
     mixins: [options.languageVmMixin],
   })

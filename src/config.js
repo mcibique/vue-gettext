@@ -22,8 +22,8 @@ export default function (Vue, languageVm, autoAddKeyAttributes) {
     set: (val) => {
       languageVm.translationEngine.silent = val
       languageVm.interpolationEngine.silent = val
-    }
-  }) 
+    },
+  })
 
   /*
    * Adds an `autoAddKeyAttributes` property to `Vue.config`.
@@ -43,7 +43,7 @@ export default function (Vue, languageVm, autoAddKeyAttributes) {
     enumerable: true,
     configurable: true,
     get: () => { return languageVm.translationEngine.muteLanguages },
-    set: (val) => { languageVm.translationEngine.muteLanguages = val }
+    set: (val) => { languageVm.translationEngine.muteLanguages = val },
   })
 
 }
