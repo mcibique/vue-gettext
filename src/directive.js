@@ -1,6 +1,8 @@
-import interpolate from './interpolate'
+import InterpolationEngine from './interpolate';
 import uuid from './uuid'
 import Vue from 'vue'
+
+const { INTERPOLATION_PREFIX } = InterpolationEngine
 
 const updateTranslation = (el, binding, vnode) => {
 
@@ -12,6 +14,7 @@ const updateTranslation = (el, binding, vnode) => {
   let isPlural = translateN !== undefined && translatePlural !== undefined
   let context = vnode.context
   let translationEngine = context.$language.translationEngine
+  let interpolationEngine = context.$language.interpolationEngine
   let disableHtmlEscaping = attrs['render-html'] === 'true'
 
   if (!isPlural && (translateN || translatePlural)) {
@@ -34,7 +37,7 @@ const updateTranslation = (el, binding, vnode) => {
     el.dataset.currentLanguage
   )
 
-  let msg = interpolate(translation, context, disableHtmlEscaping)
+  let msg = interpolationEngine.$gettextInterpolate(translation, context, disableHtmlEscaping)
 
   el.innerHTML = msg
 
@@ -77,7 +80,7 @@ export default {
 
     // Output an info in the console if an interpolation is required but no expression is provided.
     if (!translationEngine.silent) {
-      let hasInterpolation = msgid.indexOf(interpolate.INTERPOLATION_PREFIX) !== -1
+      let hasInterpolation = msgid.indexOf(INTERPOLATION_PREFIX) !== -1
       if (hasInterpolation && !binding.expression) {
         console.info(`No expression is provided for change detection. The translation for this key will be static:\n${msgid}`)
       }

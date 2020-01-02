@@ -34,14 +34,14 @@ describe('GetText plugin configuration tests', () => {
       languageVmMixin: {
         computed: {
           currentKebabCase: function () {
-            return this.translationEngine.language.toLowerCase().replace('_', '-')
+            return this.current.toLowerCase().replace('_', '-')
           },
         },
       },
     })
     let vm = new Vue({template: '<div>Foo</div>'}).$mount()
     expect(vm.$language.currentKebabCase).to.equal('fr-fr')
-    vm.$language.translationEngine.language = 'en_GB'
+    vm.$language.current = 'en_GB'
     expect(vm.$language.currentKebabCase).to.equal('en-gb')
   })
 

@@ -3,7 +3,7 @@ import './object-assign-polyfill'
 import Component from './component'
 import Directive from './directive'
 import config from './config'
-import interpolate from './interpolate'
+import InterpolationEngine from './interpolate'
 import override from './override'
 import TranslationEngine from './translate'
 
@@ -21,6 +21,7 @@ let GetTextPlugin = function (Vue, options = {}) {
     silent: Vue.config.silent,
     translations: null,
     translationEngine: null,
+    interpolationEngine: null,
   }
 
   Object.keys(options).forEach(key => {
@@ -39,13 +40,20 @@ let GetTextPlugin = function (Vue, options = {}) {
     options.translationEngine = new TranslationEngine(options.defaultLanguage, options.translations, options.silent, options.muteLanguages)
   }
 
+  if (!options.interpolationEngine) {
+    options.interpolationEngine = new InterpolationEngine(options.silent);
+  }
+
+  let interpolationEngine = options.interpolationEngine;
   let translationEngine = options.translationEngine
 
   languageVm = new Vue({
     created: function () {
       // Non-reactive data.
       this.available = options.availableLanguages
-      this.translationEngine = translationEngine
+    },
+    data() {
+      return { translationEngine, interpolationEngine }
     },
     computed: {
       current: {
@@ -62,7 +70,7 @@ let GetTextPlugin = function (Vue, options = {}) {
 
   override(Vue, languageVm)
 
-  config(Vue, languageVm, options.silent, options.autoAddKeyAttributes, options.muteLanguages)
+  config(Vue, languageVm, options.autoAddKeyAttributes)
 
   // Makes <translate> available as a global component.
   Vue.component('translate', Component)
@@ -73,11 +81,11 @@ let GetTextPlugin = function (Vue, options = {}) {
   // Exposes global properties.
   Vue.$translations = options.translations
   // Exposes instance methods.
-  Vue.prototype.$gettext = translationEngine.gettext.bind(translationEngine)
-  Vue.prototype.$pgettext = translationEngine.pgettext.bind(translationEngine)
-  Vue.prototype.$ngettext = translationEngine.ngettext.bind(translationEngine)
-  Vue.prototype.$npgettext = translationEngine.npgettext.bind(translationEngine)
-  Vue.prototype.$gettextInterpolate = interpolate.bind(interpolate)
+  Vue.prototype.$gettext = translationEngine.$gettext.bind(translationEngine)
+  Vue.prototype.$pgettext = translationEngine.$pgettext.bind(translationEngine)
+  Vue.prototype.$ngettext = translationEngine.$ngettext.bind(translationEngine)
+  Vue.prototype.$npgettext = translationEngine.$npgettext.bind(translationEngine)
+  Vue.prototype.$gettextInterpolate = interpolationEngine.$gettextInterpolate.bind(interpolationEngine)
 }
 
 export default GetTextPlugin

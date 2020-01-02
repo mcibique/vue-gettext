@@ -1,12 +1,14 @@
 import Vue from 'vue'
 
 import GetTextPlugin from '../../src/'
-import interpolate from '../../src/interpolate'
 import translations from './json/translate.json'
 import uninstallPlugin from '../testUtils'
 
 
 describe('Interpolate tests', () => {
+
+  let interpolationEngine
+  let vue
 
   beforeEach(function () {
     uninstallPlugin(Vue, GetTextPlugin)
@@ -14,25 +16,28 @@ describe('Interpolate tests', () => {
       translations: translations,
       silent: true,
     })
+
+    vue = new Vue();
+    interpolationEngine = vue.$language.interpolationEngine
   })
 
   it('without placeholders', () => {
     let msgid = 'Foo bar baz'
-    let interpolated = interpolate(msgid)
+    let interpolated = interpolationEngine.$gettextInterpolate(msgid)
     expect(interpolated).to.equal('Foo bar baz')
   })
 
   it('with a placeholder', () => {
     let msgid = 'Foo %{ placeholder } baz'
     let context = { placeholder: 'bar' }
-    let interpolated = interpolate(msgid, context)
+    let interpolated = interpolationEngine.$gettextInterpolate(msgid, context)
     expect(interpolated).to.equal('Foo bar baz')
   })
 
   it('with HTML in var (should be escaped)', () => {
     let msgid = 'Foo %{ placeholder } baz'
     let context = { placeholder: '<p>bar</p>' }
-    let interpolated = interpolate(msgid, context)
+    let interpolated = interpolationEngine.$gettextInterpolate(msgid, context)
     expect(interpolated).to.equal('Foo &lt;p&gt;bar&lt;/p&gt; baz')
   })
 
@@ -40,35 +45,35 @@ describe('Interpolate tests', () => {
     let msgid = 'Foo %{ placeholder } baz'
     let context = { placeholder: '<p>bar</p>' }
     let disableHtmlEscaping = true
-    let interpolated = interpolate(msgid, context, disableHtmlEscaping)
+    let interpolated = interpolationEngine.$gettextInterpolate(msgid, context, disableHtmlEscaping)
     expect(interpolated).to.equal('Foo <p>bar</p> baz')
   })
 
   it('with multiple spaces in the placeholder', () => {
     let msgid = 'Foo %{              placeholder                              } baz'
     let context = { placeholder: 'bar' }
-    let interpolated = interpolate(msgid, context)
+    let interpolated = interpolationEngine.$gettextInterpolate(msgid, context)
     expect(interpolated).to.equal('Foo bar baz')
   })
 
   it('with the same placeholder multiple times', () => {
     let msgid = 'Foo %{ placeholder } baz %{ placeholder } foo'
     let context = { placeholder: 'bar' }
-    let interpolated = interpolate(msgid, context)
+    let interpolated = interpolationEngine.$gettextInterpolate(msgid, context)
     expect(interpolated).to.equal('Foo bar baz bar foo')
   })
 
   it('with multiple placeholders', () => {
     let msgid = '%{foo}%{bar}%{baz}%{bar}%{foo}'
     let context = { foo: 1, bar: 2, baz: 3 }
-    let interpolated = interpolate(msgid, context)
+    let interpolated = interpolationEngine.$gettextInterpolate(msgid, context)
     expect(interpolated).to.equal('12321')
   })
 
   it('with new lines', () => {
     let msgid = '%{       \n    \n\n\n\n  foo} %{bar}!'
     let context = { foo: 'Hello', bar: 'world' }
-    let interpolated = interpolate(msgid, context)
+    let interpolated = interpolationEngine.$gettextInterpolate(msgid, context)
     expect(interpolated).to.equal('Hello world!')
   })
 
@@ -79,7 +84,7 @@ describe('Interpolate tests', () => {
         bar: 'baz',
       },
     }
-    let interpolated = interpolate(msgid, context)
+    let interpolated = interpolationEngine.$gettextInterpolate(msgid, context)
     expect(interpolated).to.equal('Foo baz baz')
   })
 
@@ -88,7 +93,7 @@ describe('Interpolate tests', () => {
     let context = {
       foo: [ 'bar', 'baz' ],
     }
-    let interpolated = interpolate(msgid, context)
+    let interpolated = interpolationEngine.$gettextInterpolate(msgid, context)
     expect(interpolated).to.equal('Foo baz baz')
   })
 
@@ -107,7 +112,7 @@ describe('Interpolate tests', () => {
         },
       },
     }
-    let interpolated = interpolate(msgid, context)
+    let interpolated = interpolationEngine.$gettextInterpolate(msgid, context)
     expect(interpolated).to.equal('Foo foo baz')
   })
 
@@ -117,7 +122,7 @@ describe('Interpolate tests', () => {
       foo: 'bar',
     }
     console.warn = sinon.spy(console, 'warn')
-    interpolate(msgid, context)
+    interpolationEngine.$gettextInterpolate(msgid, context)
     expect(console.warn).calledOnce
     expect(console.warn).calledWith('Cannot evaluate expression: alert("foobar")')
     console.warn.restore()
@@ -129,10 +134,10 @@ describe('Interpolate tests', () => {
       foo: 'bar',
     }
     console.warn = sinon.spy(console, 'warn')
-    interpolate(msgid, context)
+    interpolationEngine.$gettextInterpolate(msgid, context)
     expect(console.warn).notCalled
     Vue.config.getTextPluginSilent = false
-    interpolate(msgid, context)
+    interpolationEngine.$gettextInterpolate(msgid, context)
     expect(console.warn).calledOnce
     console.warn.restore()
   })

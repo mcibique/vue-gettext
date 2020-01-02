@@ -1,4 +1,4 @@
-export default function (Vue, languageVm, getTextPluginSilent, autoAddKeyAttributes, muteLanguages) {
+export default function (Vue, languageVm, autoAddKeyAttributes) {
 
   /*
    * Adds a `language` property to `Vue.config` and makes it reactive:
@@ -7,8 +7,8 @@ export default function (Vue, languageVm, getTextPluginSilent, autoAddKeyAttribu
   Object.defineProperty(Vue.config, 'language', {
     enumerable: true,
     configurable: true,
-    get: () => { return languageVm.translationEngine.language },
-    set: (val) => { languageVm.translationEngine.language = val },
+    get: () => { return languageVm.current },
+    set: (val) => { languageVm.current = val },
   })
 
   /*
@@ -17,9 +17,13 @@ export default function (Vue, languageVm, getTextPluginSilent, autoAddKeyAttribu
   */
   Object.defineProperty(Vue.config, 'getTextPluginSilent', {
     enumerable: true,
-    writable: true,
-    value: getTextPluginSilent,
-  })
+    configurable: true,
+    get: () => { return languageVm.translationEngine.silent },
+    set: (val) => {
+      languageVm.translationEngine.silent = val
+      languageVm.interpolationEngine.silent = val
+    }
+  }) 
 
   /*
    * Adds an `autoAddKeyAttributes` property to `Vue.config`.
@@ -37,8 +41,9 @@ export default function (Vue, languageVm, getTextPluginSilent, autoAddKeyAttribu
   */
   Object.defineProperty(Vue.config, 'getTextPluginMuteLanguages', {
     enumerable: true,
-    writable: true,
-    value: muteLanguages,  // Stores an array of languages for which the warnings are disabled.
+    configurable: true,
+    get: () => { return languageVm.translationEngine.muteLanguages },
+    set: (val) => { languageVm.translationEngine.muteLanguages = val }
   })
 
 }

@@ -119,7 +119,7 @@ export default class TranslationEngine {
    *
    * @return {String} The translated string
   */
-  gettext (msgid) {
+  $gettext (msgid) {
     return this.getTranslation(msgid)
   }
 
@@ -132,7 +132,7 @@ export default class TranslationEngine {
    *
    * @return {String} The translated string
   */
-  pgettext (context, msgid) {
+  $pgettext (context, msgid) {
     return this.getTranslation(msgid, 1, context)
   }
 
@@ -147,7 +147,7 @@ export default class TranslationEngine {
    *
    * @return {String} The translated string
   */
-  ngettext (msgid, plural, n) {
+  $ngettext (msgid, plural, n) {
     return this.getTranslation(msgid, n, null, plural)
   }
 
@@ -163,7 +163,7 @@ export default class TranslationEngine {
    *
    * @return {String} The translated string
   */
-  npgettext (context, msgid, plural, n) {
+  $npgettext (context, msgid, plural, n) {
     return this.getTranslation(msgid, n, context, plural)
   }
 
